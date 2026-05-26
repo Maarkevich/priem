@@ -11,8 +11,8 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0b1228" />
   <title>Приём таблеток</title>
-  <!-- Версия 1.4 -->
-  <link rel="stylesheet" href="styles.css?v=1.4" />
+  <!-- Версия 1.3 -->
+  <link rel="stylesheet" href="styles.css?v=1.3" />
   <style>
     .hidden { display: none !important; }
     .alert-warning {
@@ -39,18 +39,13 @@
     }
     .med-item {
       display: flex;
-      flex-direction: column;
-      padding: 12px 0;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
       border-bottom: 1px solid var(--card-border);
       gap: 8px;
     }
     .med-item:last-child { border-bottom: none; }
-    .med-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
     .med-name {
       font-weight: 600;
       flex: 1;
@@ -60,40 +55,19 @@
       opacity: 0.5;
     }
     .med-check {
-      width: 36px; height: 36px;
+      width: 32px; height: 32px;
       border-radius: 50%;
       border: 2px solid var(--accent);
       background: transparent;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      font-size: 16px;
       transition: background 0.2s;
-      flex-shrink: 0;
     }
     .med-check.taken {
       background: var(--accent);
       color: #fff;
-    }
-    .med-details {
-      font-size: 12px;
-      color: var(--text-muted);
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .med-time {
-      font-weight: 600;
-      color: var(--accent);
-      cursor: pointer;
-      text-decoration: underline;
-      text-decoration-style: dotted;
-      text-underline-offset: 3px;
-    }
-    .med-time:hover { opacity: 0.8; }
-    .med-remaining {
-      font-size: 12px;
-      color: var(--text-muted);
     }
     .btn-wake {
       width: 100%;
@@ -106,6 +80,38 @@
       border-radius: 16px;
       box-shadow: 0 8px 24px var(--accent-soft);
       margin-top: 12px;
+    }
+    .meal-btn {
+      margin-top: 8px;
+      padding: 10px;
+      background: var(--btn-bg);
+      border: 1px solid var(--btn-border);
+      border-radius: 12px;
+      color: var(--text);
+      font-weight: 600;
+      width: 100%;
+      backdrop-filter: blur(14px);
+    }
+    .meal-btn:active { transform: scale(0.98); }
+    .snack-block {
+      background: var(--accent-soft);
+      border-radius: 14px;
+      padding: 12px;
+      margin-top: 8px;
+    }
+    .snack-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--accent);
+    }
+    .snack-list {
+      font-size: 13px;
+      color: var(--text);
+      margin: 0;
+      padding-left: 20px;
+    }
+    .snack-list li {
+      margin-bottom: 2px;
     }
     #toast-container {
       position: fixed;
@@ -139,6 +145,21 @@
       from { opacity: 1; transform: translateY(0); }
       to { opacity: 0; transform: translateY(20px); }
     }
+    .countdown-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    /* Кликабельное время */
+    .editable-time {
+      cursor: pointer;
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      text-underline-offset: 3px;
+    }
+    .editable-time:hover {
+      color: var(--accent);
+    }
     .wakeup-info {
       display: flex;
       align-items: center;
@@ -159,15 +180,6 @@
       border-radius: 8px;
     }
     .wakeup-edit:active { background: var(--btn-bg); }
-    .category-badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 8px;
-      font-size: 11px;
-      font-weight: 600;
-      background: var(--accent-soft);
-      color: var(--accent);
-    }
   </style>
 </head>
 <body>
@@ -195,6 +207,6 @@
     <button class="ios-btn" id="closeIosBanner">Понятно</button>
   </div>
 
-  <script src="app.js?v=1.4"></script>
+  <script src="app.js?v=1.3"></script>
 </body>
 </html>
