@@ -1,4 +1,4 @@
-// ====== КОНФИГУРАЦИЯ ПРЕПАРАТОВ (версия 1.6) ======
+// ====== КОНФИГУРАЦИЯ ПРЕПАРАТОВ (версия 1.7) ======
 const defaultMeds = [
   {
     id: 1,
@@ -20,7 +20,12 @@ const defaultMeds = [
     startDate: new Date().toISOString(),
     durationDays: 14,
     active: true,
-    timeRecommended: '08:00'
+    // Для разных слотов разное рекомендованное время
+    timeRecommendedBySlot: {
+      'утро': '08:00',
+      'день': '13:00',
+      'вечер': '19:00'
+    }
   },
   {
     id: 3,
@@ -303,8 +308,14 @@ async function renderApp() {
       const taken = !!takenEntry;
       const takenTime = takenEntry ? formatTime(new Date(takenEntry.timestamp)) : null;
 
-      // Определяем рекомендованное время на основе вчерашнего приёма
-      let recommendedTime = med.timeRecommended || '';
+      // Определяем рекомендованное время для текущего слота
+      let recommendedTime = '';
+      if (med.timeRecommendedBySlot && med.timeRecommendedBySlot[slot]) {
+        recommendedTime = med.timeRecommendedBySlot[slot];
+      } else if (med.timeRecommended) {
+        recommendedTime = med.timeRecommended;
+      }
+      // Если есть запись вчерашнего приёма для этого же слота, используем её время
       if (historyYesterday.length > 0) {
         const yesterdayEntry = historyYesterday.find(h => h.medicationId === med.id && h.slot === slot);
         if (yesterdayEntry && yesterdayEntry.taken) {
@@ -500,9 +511,16 @@ async function applyTimeChange(editKey, newTime) {
     const meds = await getMeds();
     const med = meds.find(m => m.id === medId);
     if (med) {
-      med.timeRecommended = newTime;
+      if (!med.timeRecommendedBySlot) {
+        // Если у препарата ещё нет объекта, создаём и копируем старое общее время в каждый слот
+        med.timeRecommendedBySlot = {};
+        if (med.timeRecommended) {
+          med.schedule.forEach(s => med.timeRecommendedBySlot[s] = med.timeRecommended);
+        }
+      }
+      med.timeRecommendedBySlot[slot] = newTime;
       await saveMeds(meds);
-      showToast(`⏰ Рекомендованное время изменено на ${newTime}`);
+      showToast(`⏰ Рекомендованное время для "${slot}" изменено на ${newTime}`);
       await renderApp();
     }
     return;
