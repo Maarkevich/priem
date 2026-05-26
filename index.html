@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark" data-accent="blue">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Приём таблеток" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0b1228" />
+  <title>Приём таблеток</title>
+  <!-- Версия 1.4 -->
+  <link rel="stylesheet" href="styles.css?v=1.4" />
+  <style>
+    .hidden { display: none !important; }
+    .alert-warning {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 12px;
+      line-height: 1.4;
+      color: #fca5a5;
+      margin-top: 8px;
+      backdrop-filter: blur(14px);
+    }
+    .alert-info {
+      background: rgba(96, 165, 250, 0.15);
+      border: 1px solid rgba(96, 165, 250, 0.4);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 12px;
+      line-height: 1.4;
+      color: var(--accent);
+      margin-top: 8px;
+      backdrop-filter: blur(14px);
+    }
+    .med-item {
+      display: flex;
+      flex-direction: column;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--card-border);
+      gap: 8px;
+    }
+    .med-item:last-child { border-bottom: none; }
+    .med-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .med-name {
+      font-weight: 600;
+      flex: 1;
+    }
+    .med-name.completed {
+      text-decoration: line-through;
+      opacity: 0.5;
+    }
+    .med-check {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .med-check.taken {
+      background: var(--accent);
+      color: #fff;
+    }
+    .med-details {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .med-time {
+      font-weight: 600;
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      text-underline-offset: 3px;
+    }
+    .med-time:hover { opacity: 0.8; }
+    .med-remaining {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .btn-wake {
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: 700;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px var(--accent-soft);
+      margin-top: 12px;
+    }
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      z-index: 2000;
+      pointer-events: none;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .toast {
+      background: var(--accent);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 14px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      animation: toastIn 0.3s ease, toastOut 0.3s ease 2.2s forwards;
+      pointer-events: auto;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(20px); }
+    }
+    .wakeup-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .wakeup-time {
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .wakeup-edit {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .wakeup-edit:active { background: var(--btn-bg); }
+    .category-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-top">
+      <h1 class="app-title" id="greeting">Приём таблеток</h1>
+      <div class="header-actions">
+        <button class="theme-btn" id="themeToggle" aria-label="Сменить тему и оформление">🎨</button>
+        <button class="install-btn hidden" id="installBtn" aria-label="Установить приложение">📲</button>
+      </div>
+    </div>
+    <select class="position-select hidden" id="settingsSelect" aria-label="Настройки">
+      <option value="">⚙️ Настройки</option>
+    </select>
+  </header>
+
+  <main class="main" id="mainContent">
+    <!-- Динамически заполняется -->
+  </main>
+
+  <div id="toast-container"></div>
+
+  <div class="ios-banner" id="iosBanner">
+    <span>Установите приложение на главный экран: нажмите «Поделиться» → «На экран Домой»</span>
+    <button class="ios-btn" id="closeIosBanner">Понятно</button>
+  </div>
+
+  <script src="app.js?v=1.4"></script>
+</body>
+</html>
