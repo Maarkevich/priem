@@ -1,4 +1,4 @@
-// ====== КОНФИГУРАЦИЯ ПРЕПАРАТОВ (версия 1.4) ======
+// ====== КОНФИГУРАЦИЯ ПРЕПАРАТОВ (версия 1.5) ======
 const defaultMeds = [
   {
     id: 1,
@@ -336,33 +336,36 @@ async function renderApp() {
       const taken = !!takenEntry;
       const takenTime = takenEntry ? formatTime(new Date(takenEntry.timestamp)) : null;
 
-      // Определяем рекомендованное время на основе вчерашнего приёма
-      let recommendedTime = med.timeRecommended || '';
-      if (historyYesterday.length > 0) {
-        const yesterdayEntry = historyYesterday.find(h => h.medicationId === med.id && h.slot === slot);
-        if (yesterdayEntry && yesterdayEntry.taken) {
-          recommendedTime = formatTime(new Date(yesterdayEntry.timestamp));
-        }
-      }
-
-      html += `<div class="med-item">
-        <div class="med-header">
-          <span class="med-name ${taken ? 'completed' : ''}" data-id="${med.id}" style="cursor:pointer">
-            💊 ${med.name} — ${med.dosage}
-          </span>
-          <button class="med-check ${taken ? 'taken' : ''}" data-med="${med.id}" data-slot="${slot}">
-            ${taken ? '✓' : ''}
-          </button>
-        </div>
-        <div class="med-details">
-          ${taken ? `<span>✅ Принято в <span class="med-time" data-edit-time="history-${med.id}-${slot}">${takenTime}</span></span>` : 
-            `<span>⏳ Рекомендуется: <span class="med-time" data-edit-time="recommend-${med.id}-${slot}">${recommendedTime}</span></span>`}
-          <span class="med-remaining">Осталось ${med.durationDays} дней</span>
-        </div>
-      </div>`;
-    }
-    html += `</div>`;
+// Определяем рекомендованное время на основе вчерашнего приёма
+let recommendedTime = med.timeRecommended || '';
+if (historyYesterday.length > 0) {
+  const yesterdayEntry = historyYesterday.find(h => h.medicationId === med.id && h.slot === slot);
+  if (yesterdayEntry && yesterdayEntry.taken) {
+    recommendedTime = formatTime(new Date(yesterdayEntry.timestamp));
   }
+}
+
+html += `<div class="med-item">
+  <div class="med-header">
+    <span class="med-name ${taken ? 'completed' : ''}" data-id="${med.id}" style="cursor:pointer">
+      💊 ${med.name} — ${med.dosage}
+    </span>
+    <button class="med-check ${taken ? 'taken' : ''}" data-med="${med.id}" data-slot="${slot}">
+      ${taken ? '✓' : ''}
+    </button>
+  </div>
+  <div class="med-details">
+    ${taken ? `<span>✅ Принято в <span class="med-time" data-edit-time="history-${med.id}-${slot}">${takenTime}</span></span>` : 
+      `<span>⏳ Рекомендуется: <span class="med-time" data-edit-time="recommend-${med.id}-${slot}">${recommendedTime}</span></span>`}
+    <span class="med-remaining">Осталось ${med.durationDays} дней</span>
+  </div>`;
+
+// Вот это добавляется ПОСЛЕ закрытия med-details, а не внутри него
+if (med.conditions) {
+  html += `<div style="font-size:12px; color: var(--text-muted); margin-top:4px; padding:6px; background: var(--accent-soft); border-radius:8px;">📌 ${med.conditions}</div>`;
+}
+
+html += `</div>`;
 
   // Информация о препаратах
   html += `<div class="card">
