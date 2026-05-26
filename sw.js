@@ -1,4 +1,4 @@
-const CACHE_NAME = 'med-tracker-v3';
+const CACHE_NAME = 'med-tracker-v5';
 const BASE_PATH = '/priem';
 
 const STATIC_ASSETS = [

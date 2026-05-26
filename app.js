@@ -62,7 +62,7 @@ const availableSlots = [
 // ====== ЛОКАЛЬНАЯ ДАТА (день начинается в 06:00) ======
 function getLocalDateString(date = new Date()) {
   const d = new Date(date);
-  d.setHours(d.getHours() - 6); // смещаем на 6 часов назад, чтобы ночь относилась к предыдущему дню
+  d.setHours(d.getHours() - 6);
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
@@ -164,14 +164,13 @@ async function getHistoryByDate(dateStr) {
 }
 
 async function getLastTakenTime(medId, slot) {
-  // Ищем последнюю запись в истории для данного препарата и слота
   if (!db) return null;
   return new Promise((resolve, reject) => {
     const tx = db.transaction('history', 'readonly');
     const store = tx.objectStore('history');
     const index = store.index('medicationId');
     const range = IDBKeyRange.only(medId);
-    const req = index.openCursor(range, 'prev'); // в обратном порядке
+    const req = index.openCursor(range, 'prev');
     let lastTime = null;
     req.onsuccess = (e) => {
       const cursor = e.target.result;
@@ -286,7 +285,6 @@ async function renderApp() {
   const userName = getUserName();
   const greeting = getGreeting(userName);
 
-  // Если день не начат или сегодня по версии 06:00 другой день
   if (!wakeUp || !isSameDay(wakeUp, new Date())) {
     main.innerHTML = `<div class="card" style="text-align:center">
       <div style="font-size:22px;font-weight:700;margin-bottom:16px">${greeting}</div>
@@ -336,36 +334,39 @@ async function renderApp() {
       const taken = !!takenEntry;
       const takenTime = takenEntry ? formatTime(new Date(takenEntry.timestamp)) : null;
 
-// Определяем рекомендованное время на основе вчерашнего приёма
-let recommendedTime = med.timeRecommended || '';
-if (historyYesterday.length > 0) {
-  const yesterdayEntry = historyYesterday.find(h => h.medicationId === med.id && h.slot === slot);
-  if (yesterdayEntry && yesterdayEntry.taken) {
-    recommendedTime = formatTime(new Date(yesterdayEntry.timestamp));
-  }
-}
+      // Определяем рекомендованное время на основе вчерашнего приёма
+      let recommendedTime = med.timeRecommended || '';
+      if (historyYesterday.length > 0) {
+        const yesterdayEntry = historyYesterday.find(h => h.medicationId === med.id && h.slot === slot);
+        if (yesterdayEntry && yesterdayEntry.taken) {
+          recommendedTime = formatTime(new Date(yesterdayEntry.timestamp));
+        }
+      }
 
-html += `<div class="med-item">
-  <div class="med-header">
-    <span class="med-name ${taken ? 'completed' : ''}" data-id="${med.id}" style="cursor:pointer">
-      💊 ${med.name} — ${med.dosage}
-    </span>
-    <button class="med-check ${taken ? 'taken' : ''}" data-med="${med.id}" data-slot="${slot}">
-      ${taken ? '✓' : ''}
-    </button>
-  </div>
-  <div class="med-details">
-    ${taken ? `<span>✅ Принято в <span class="med-time" data-edit-time="history-${med.id}-${slot}">${takenTime}</span></span>` : 
-      `<span>⏳ Рекомендуется: <span class="med-time" data-edit-time="recommend-${med.id}-${slot}">${recommendedTime}</span></span>`}
-    <span class="med-remaining">Осталось ${med.durationDays} дней</span>
-  </div>`;
+      html += `<div class="med-item">
+        <div class="med-header">
+          <span class="med-name ${taken ? 'completed' : ''}" data-id="${med.id}" style="cursor:pointer">
+            💊 ${med.name} — ${med.dosage}
+          </span>
+          <button class="med-check ${taken ? 'taken' : ''}" data-med="${med.id}" data-slot="${slot}">
+            ${taken ? '✓' : ''}
+          </button>
+        </div>
+        <div class="med-details">
+          ${taken ? `<span>✅ Принято в <span class="med-time" data-edit-time="history-${med.id}-${slot}">${takenTime}</span></span>` : 
+            `<span>⏳ Рекомендуется: <span class="med-time" data-edit-time="recommend-${med.id}-${slot}">${recommendedTime}</span></span>`}
+          <span class="med-remaining">Осталось ${med.durationDays} дней</span>
+        </div>`;
 
-// Вот это добавляется ПОСЛЕ закрытия med-details, а не внутри него
-if (med.conditions) {
-  html += `<div style="font-size:12px; color: var(--text-muted); margin-top:4px; padding:6px; background: var(--accent-soft); border-radius:8px;">📌 ${med.conditions}</div>`;
-}
+      if (med.conditions) {
+        html += `<div style="font-size:12px; color: var(--text-muted); margin-top:4px; padding:6px; background: var(--accent-soft); border-radius:8px;">📌 ${med.conditions}</div>`;
+      }
 
-html += `</div>`;
+      html += `</div>`; // конец med-item
+    } // конец for (const med of medsForSlot)
+
+    html += `</div>`; // конец карточки слота
+  } // конец for (const slot of slotOrder)
 
   // Информация о препаратах
   html += `<div class="card">
@@ -410,7 +411,6 @@ async function onMedCheck(e) {
   const todayStr = getLocalDateString();
 
   if (wasTaken) {
-    // Отмена отметки
     await removeHistory(medId, todayStr, slot);
     btn.classList.remove('taken');
     btn.textContent = '';
@@ -501,7 +501,6 @@ async function applyTimeChange(editKey, newTime) {
     return;
   }
 
-  // Редактирование времени приёма в истории
   if (editKey.startsWith('history-')) {
     const parts = editKey.replace('history-', '').split('-');
     const medId = parseInt(parts[0]);
@@ -511,8 +510,6 @@ async function applyTimeChange(editKey, newTime) {
     if (entry) {
       const timestamp = new Date(entry.timestamp);
       timestamp.setHours(h, m, 0, 0);
-      entry.timestamp = timestamp.toISOString();
-      // Для простоты перезапишем через remove + add
       await removeHistory(medId, todayStr, slot);
       await addHistory({
         medicationId: medId,
@@ -527,7 +524,6 @@ async function applyTimeChange(editKey, newTime) {
     return;
   }
 
-  // Редактирование рекомендуемого времени
   if (editKey.startsWith('recommend-')) {
     const parts = editKey.replace('recommend-', '').split('-');
     const medId = parseInt(parts[0]);
