@@ -1,11 +1,11 @@
-// ====== КОНФИГУРАЦИЯ ПРЕПАРАТОВ (версия 1.5) ======
+// ====== КОНФИГУРАЦИЯ ПРЕПАРАТОВ (версия 1.6) ======
 const defaultMeds = [
   {
     id: 1,
     name: 'Уро-Ваксом',
     dosage: '1 капсула',
     conditions: 'Утром натощак, в одно и то же время ежедневно.',
-    schedule: ['утро натощак'],
+    schedule: ['утро'],
     startDate: new Date().toISOString(),
     durationDays: 80,
     active: true,
@@ -27,7 +27,7 @@ const defaultMeds = [
     name: 'Циурол',
     dosage: '1 таблетка',
     conditions: 'После еды, ежедневно в стабильное время.',
-    schedule: ['после еды'],
+    schedule: ['утро'],
     startDate: new Date().toISOString(),
     durationDays: 80,
     active: true,
@@ -38,11 +38,11 @@ const defaultMeds = [
     name: 'Линекс Форте',
     dosage: '1 капсула',
     conditions: 'После еды, можно в любое время дня, не запивать горячим.',
-    schedule: ['после еды'],
+    schedule: ['день'],
     startDate: new Date().toISOString(),
     durationDays: 7,
     active: true,
-    timeRecommended: '10:00'
+    timeRecommended: '12:00'
   }
 ];
 
@@ -52,11 +52,9 @@ const defaultSettings = {
 
 // Доступные слоты для редактора
 const availableSlots = [
-  { id: 'утро натощак', label: 'Утро натощак' },
   { id: 'утро', label: 'Утро' },
   { id: 'день', label: 'День' },
-  { id: 'вечер', label: 'Вечер' },
-  { id: 'после еды', label: 'После еды' }
+  { id: 'вечер', label: 'Вечер' }
 ];
 
 // ====== ЛОКАЛЬНАЯ ДАТА (день начинается в 06:00) ======
@@ -159,33 +157,6 @@ async function getHistoryByDate(dateStr) {
     const range = IDBKeyRange.only(dateStr);
     const req = index.getAll(range);
     req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-async function getLastTakenTime(medId, slot) {
-  if (!db) return null;
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction('history', 'readonly');
-    const store = tx.objectStore('history');
-    const index = store.index('medicationId');
-    const range = IDBKeyRange.only(medId);
-    const req = index.openCursor(range, 'prev');
-    let lastTime = null;
-    req.onsuccess = (e) => {
-      const cursor = e.target.result;
-      if (cursor) {
-        const h = cursor.value;
-        if (h.slot === slot && h.taken) {
-          lastTime = h.timestamp || h.date;
-          resolve(lastTime);
-          return;
-        }
-        cursor.continue();
-      } else {
-        resolve(lastTime);
-      }
-    };
     req.onerror = () => reject(req.error);
   });
 }
@@ -313,13 +284,11 @@ async function renderApp() {
   </div>`;
 
   // Группируем препараты по слотам
-  const slotOrder = ['утро натощак', 'утро', 'день', 'вечер', 'после еды'];
+  const slotOrder = ['утро', 'день', 'вечер'];
   const slotLabels = {
-    'утро натощак': '🌅 Утро · Натощак',
-    'утро': '☀️ Утро',
+    'утро': '🌅 Утро',
     'день': '🌤 День',
-    'вечер': '🌇 Вечер',
-    'после еды': '🍽 После еды'
+    'вечер': '🌇 Вечер'
   };
 
   for (const slot of slotOrder) {

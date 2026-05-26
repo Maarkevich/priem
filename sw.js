@@ -1,4 +1,4 @@
-const CACHE_NAME = 'med-tracker-v5';
+const CACHE_NAME = 'med-tracker-v6';
 const BASE_PATH = '/priem';
 
 const STATIC_ASSETS = [
@@ -17,9 +17,9 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('[SW v5] Кэширование статических ресурсов...');
+        console.log('[SW v6] Кэширование статических ресурсов...');
         return cache.addAll(STATIC_ASSETS).catch(err => {
-          console.warn('[SW v5] Не удалось закэшировать некоторые ресурсы:', err);
+          console.warn('[SW v6] Не удалось закэшировать некоторые ресурсы:', err);
         });
       })
       .then(() => self.skipWaiting())
